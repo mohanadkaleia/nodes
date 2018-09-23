@@ -1,0 +1,8 @@
+*.pdf
+data/*
+.DS_Store
+venv
+__pycache
+submit.py
+*.pyc
+_coursera
