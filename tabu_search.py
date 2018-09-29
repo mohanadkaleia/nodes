@@ -32,17 +32,19 @@ def generate_neighbours(points):
     for i in range(len(points)):
         for j in range(i+1, len(points)):
             if i not in dict_of_neighbours:
-                _list = list()
-                _list.append([j, distance(points[i], points[j])])
-                dict_of_neighbours[i] = _list
+                dict_of_neighbours[i] = {}
+                dict_of_neighbours[i][j]= distance(points[i], points[j])
             else:
-                dict_of_neighbours[i].append([j, distance(points[i], points[j])])
+                dict_of_neighbours[i][j] = distance(points[i], points[j])
+                # dict_of_neighbours[i] = sorted(dict_of_neighbours[i].items(), key=lambda kv: kv[1])
             if j not in dict_of_neighbours:
-                _list = list()
-                _list.append([i, distance(points[j], points[i])])
-                dict_of_neighbours[j] = _list
+                dict_of_neighbours[j] = {}
+                dict_of_neighbours[j][i] = distance(points[j], points[i])
             else:
-                dict_of_neighbours[j].append([i, distance(points[j], points[i])])
+                dict_of_neighbours[j][i] = distance(points[j], points[i])
+                # dict_of_neighbours[i] = sorted(dict_of_neighbours[i].items(), key=lambda kv: kv[1])
+
+
     return dict_of_neighbours
 
 
@@ -51,52 +53,85 @@ def generate_first_solution(nodes, dict_of_neighbours):
     end_node = start_node
 
     first_solution = []
-
+    distance = 0
     visiting = start_node
-
-    distance_of_first_solution = 0
+    pre_node = None
     while visiting not in first_solution:
-        minim = 1000000
-        for k in dict_of_neighbours[visiting]:
-            if k[1] < minim and k[0] not in first_solution:
-                minim = k[1]
-                best_node = k[0]
-
+        _tmp = copy.deepcopy(dict_of_neighbours[visiting])
+        _tmp.pop(pre_node, None)
+        next_node = min(_tmp.items(), key=lambda x: x[1])[0]
+        distance += dict_of_neighbours[visiting][next_node]
         first_solution.append(visiting)
-        distance_of_first_solution = distance_of_first_solution + minim
-        visiting = best_node
+        pre_node = visiting
+        print (pre_node)
+        visiting = next_node
 
-    first_solution.append(end_node)
-    position = 0
-    for k in dict_of_neighbours[first_solution[-2]]:
-        if k[0] == start_node:
-            break
-        position += 1
+    print(visiting)
+    first_solution.append(nodes[0])
+    print(dict_of_neighbours)
+    print(first_solution)
+    distance += dict_of_neighbours[pre_node][end_node]
+    return first_solution, distance
+    #
+    #
+    # for i in range(len(nodes) - 1):
+    #     distance = distance + dict_of_neighbours[first_solution[i]][first_solution[i+1]]
+    #
+    # return first_solution, distance
+    # visiting = start_node
+    #
+    # distance_of_first_solution = 0
+    # while visiting not in first_solution:
+    #     minim = 1000000
+    #     for k in dict_of_neighbours[visiting].keys():
+    #         if dict_of_neighbours[visiting][k] < minim and k not in first_solution:
+    #             minim = dict_of_neighbours[visiting][k]
+    #             best_node = k
+    #
+    #     first_solution.append(visiting)
+    #     distance_of_first_solution = distance_of_first_solution + minim
+    #     visiting = best_node
+    #
+    # first_solution.append(end_node)
+    # distance_of_first_solution = distance_of_first_solution + dict_of_neighbours[first_solution[-2]][first_solution[-1]] - minim
+    # return first_solution, distance_of_first_solution
 
-    distance_of_first_solution = distance_of_first_solution + dict_of_neighbours[first_solution[-2]][position][1] - minim
-    return first_solution, distance_of_first_solution
 
-
-def find_neighborhood(solution, dict_of_neighbours):
+def find_neighborhood(solution, dict_of_neighbours, n_opt=1):
     neighborhood_of_solution = []
-    for n in solution[1:-1]:
-        idx1 = solution.index(n)
-        for kn in solution[1:-1]:
-            idx2 = solution.index(kn)
-            if n == kn:
+    for n in solution[1:-n_opt]:
+        idx1 = []
+        n_index = solution.index(n)
+        for i in range(n_opt):
+            idx1.append(n_index+i)
+
+        for kn in solution[1:-n_opt]:
+            idx2 = []
+            kn_index = solution.index(kn)
+            for i in range(n_opt):
+                idx2.append(kn_index+i)
+            if bool(
+                set(solution[idx1[0]:(idx1[-1]+1)]) &
+                set(solution[idx2[0]:(idx2[-1]+1)])):
+                # print(idx1)
+                # print(idx2)
                 continue
+            # if n == kn or :
+            #     continue
 
             _tmp = copy.deepcopy(solution)
-            _tmp[idx1] = kn
-            _tmp[idx2] = n
+            for i in range(n_opt):
+                _tmp[idx1[i]] = solution[idx2[i]]
+                _tmp[idx2[i]] = solution[idx1[i]]
 
             distance = 0
             for k in _tmp[:-1]:
                 next_node = _tmp[_tmp.index(k) + 1]
-                for i in dict_of_neighbours[k]:
-                    if i[0] == next_node:
-                        # print("{0} -> {1}: {2}".format(k, next_node, i[1]))
-                        distance = distance + i[1]
+                distance = distance + dict_of_neighbours[k][next_node]
+                # for i in dict_of_neighbours[k]:
+                #     if i[0] == next_node:
+                #         # print("{0} -> {1}: {2}".format(k, next_node, i[1]))
+                #         distance = distance + i[1]
             _tmp.append(distance)
             if _tmp not in neighborhood_of_solution:
                 neighborhood_of_solution.append(_tmp)
@@ -107,31 +142,34 @@ def find_neighborhood(solution, dict_of_neighbours):
     return neighborhood_of_solution
 
 
-def tabu_search(first_solution, distance_of_first_solution, dict_of_neighbours, iters, size):
+def tabu_search(first_solution, distance_of_first_solution, dict_of_neighbours, iters, size, n_opt=1):
     count = 1
     solution = first_solution
     tabu_list = list()
     best_cost = distance_of_first_solution
     best_solution_ever = solution
     while count <= iters:
-        neighborhood = find_neighborhood(solution, dict_of_neighbours)
+        neighborhood = find_neighborhood(solution, dict_of_neighbours, n_opt=n_opt)
         index_of_best_solution = 0
         best_solution = neighborhood[index_of_best_solution]
         best_cost_index = len(best_solution) - 1
         found = False
         while found is False:
             i = 0
+            first_exchange_node, second_exchange_node = [], []
+            n_opt_counter = 0
             while i < len(best_solution):
-
                 if best_solution[i] != solution[i]:
-                    first_exchange_node = best_solution[i]
-                    second_exchange_node = solution[i]
-                    break
+                    first_exchange_node.append(best_solution[i])
+                    second_exchange_node.append(solution[i])
+                    n_opt_counter += 1
+                    if n_opt_counter == n_opt:
+                        break
                 i = i + 1
 
-            if [first_exchange_node, second_exchange_node] not in tabu_list and [second_exchange_node,
-                                                                                 first_exchange_node] not in tabu_list:
-                tabu_list.append([first_exchange_node, second_exchange_node])
+            exchange = first_exchange_node + second_exchange_node
+            if first_exchange_node + second_exchange_node not in tabu_list and second_exchange_node + first_exchange_node not in tabu_list:
+                tabu_list.append(exchange)
                 found = True
                 solution = best_solution[:-1]
                 cost = neighborhood[index_of_best_solution][best_cost_index]

@@ -34,12 +34,16 @@ def solve_it(input_data):
     # build a trivial solution
     # visit the nodes in the order they appear in the file
     nodes = range(0, nodeCount)
-    iter = 10
-    size = 7
+    iter = 70
+    size = 3
     dict_of_neighbours = ts.generate_neighbours(points)
     first_solution, distance_of_first_solution = ts.generate_first_solution(nodes, dict_of_neighbours)
-    solution, cost = ts.tabu_search(first_solution, distance_of_first_solution, dict_of_neighbours, iter, size)
-    # print("Best solution: {0}, with total distance: {1}.".format(solution, cost))
+    solution, cost = ts.tabu_search(first_solution,
+                                    distance_of_first_solution,
+                                    dict_of_neighbours,
+                                    iter,
+                                    size,
+                                    n_opt=1)
 
     # calculate the length of the tour
     obj = length(points[solution[-1]], points[solution[0]])
