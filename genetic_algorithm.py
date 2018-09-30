@@ -11,9 +11,10 @@ import random
 
 
 class City:
-    def __init__(self, x=None, y=None):
+    def __init__(self, x=None, y=None, index=0):
         self.x = None
         self.y = None
+        self.index = index
         if x is not None:
             self.x = x
         else:
@@ -74,9 +75,10 @@ class Tour:
         self.tour[key] = value
 
     def __repr__(self):
-        geneString = "|"
+        geneString = ""
         for i in range(0, self.tourSize()):
-            geneString += str(self.getCity(i)) + "|"
+            geneString += str(self.getCity(i).index) + "->"
+        geneString += str(self.getCity(0).index)
         return geneString
 
     def generateIndividual(self):
@@ -156,7 +158,7 @@ class Population:
 class GA:
     def __init__(self, tourmanager):
         self.tourmanager = tourmanager
-        self.mutationRate = 0.015
+        self.mutationRate = 0.001
         self.tournamentSize = 5
         self.elitism = True
 
@@ -225,45 +227,45 @@ if __name__ == '__main__':
     tourmanager = TourManager()
 
     # Create and add our cities
-    city = City(60, 200)
+    city = City(60, 200, 0)
     tourmanager.addCity(city)
-    city2 = City(180, 200)
+    city2 = City(180, 200, 1)
     tourmanager.addCity(city2)
-    city3 = City(80, 180)
+    city3 = City(80, 180, 2)
     tourmanager.addCity(city3)
-    city4 = City(140, 180)
+    city4 = City(140, 180, 3)
     tourmanager.addCity(city4)
-    city5 = City(20, 160)
+    city5 = City(20, 160, 4)
     tourmanager.addCity(city5)
-    city6 = City(100, 160)
+    city6 = City(100, 160, 5)
     tourmanager.addCity(city6)
-    city7 = City(200, 160)
+    city7 = City(200, 160, 6)
     tourmanager.addCity(city7)
-    city8 = City(140, 140)
+    city8 = City(140, 140, 7)
     tourmanager.addCity(city8)
-    city9 = City(40, 120)
+    city9 = City(40, 120, 8)
     tourmanager.addCity(city9)
-    city10 = City(100, 120)
+    city10 = City(100, 120, 9)
     tourmanager.addCity(city10)
-    city11 = City(180, 100)
+    city11 = City(180, 100, 10)
     tourmanager.addCity(city11)
-    city12 = City(60, 80)
+    city12 = City(60, 80, 11)
     tourmanager.addCity(city12)
-    city13 = City(120, 80)
+    city13 = City(120, 80, 12)
     tourmanager.addCity(city13)
-    city14 = City(180, 60)
+    city14 = City(180, 60, 13)
     tourmanager.addCity(city14)
-    city15 = City(20, 40)
+    city15 = City(20, 40, 14)
     tourmanager.addCity(city15)
-    city16 = City(100, 40)
+    city16 = City(100, 40, 15)
     tourmanager.addCity(city16)
-    city17 = City(200, 40)
+    city17 = City(200, 40, 16)
     tourmanager.addCity(city17)
-    city18 = City(20, 20)
+    city18 = City(20, 20, 17)
     tourmanager.addCity(city18)
-    city19 = City(60, 20)
+    city19 = City(60, 20, 18)
     tourmanager.addCity(city19)
-    city20 = City(160, 20)
+    city20 = City(160, 20, 19)
     tourmanager.addCity(city20)
 
     # Initialize population
